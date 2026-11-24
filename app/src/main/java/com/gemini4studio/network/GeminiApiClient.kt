@@ -55,7 +55,7 @@ class GeminiApiClient(private val context: Context) {
                 .build()
 
             client.newCall(request).execute().use { resp ->
-                val body = resp.body?.string().orEmpty()
+                val body = resp.body.string()
                 if (!resp.isSuccessful) {
                     throw IllegalStateException("Model detection failed (${resp.code}): $body")
                 }
@@ -173,7 +173,7 @@ class GeminiApiClient(private val context: Context) {
 
         val uploadUrl = client.newCall(startReq).execute().use { resp ->
             if (!resp.isSuccessful) {
-                throw IllegalStateException("File upload init failed (${resp.code}): ${resp.body?.string()}")
+                throw IllegalStateException("File upload init failed (${resp.code}): ${resp.body.string()}")
             }
             resp.header("X-Goog-Upload-URL")
                 ?: throw IllegalStateException("Missing X-Goog-Upload-URL header")
@@ -187,7 +187,7 @@ class GeminiApiClient(private val context: Context) {
             .build()
 
         client.newCall(uploadReq).execute().use { resp ->
-            val body = resp.body?.string().orEmpty()
+            val body = resp.body.string()
             if (!resp.isSuccessful) {
                 throw IllegalStateException("File upload finalize failed (${resp.code}): $body")
             }
@@ -206,7 +206,7 @@ class GeminiApiClient(private val context: Context) {
                 .build()
             client.newCall(req).execute().use { resp ->
                 if (!resp.isSuccessful) return
-                val root = json.parseToJsonElement(resp.body?.string().orEmpty()).jsonObject
+                val root = json.parseToJsonElement(resp.body.string()).jsonObject
                 when (root["state"]?.jsonPrimitive?.contentOrNull) {
                     "ACTIVE" -> return
                     "FAILED" -> throw IllegalStateException("Gemini File API failed to process file.")
@@ -247,11 +247,11 @@ class GeminiApiClient(private val context: Context) {
 
             client.newCall(request).execute().use { response ->
                 if (!response.isSuccessful) {
-                    val err = response.body?.string().orEmpty()
+                    val err = response.body.string()
                     throw IllegalStateException("API Error ${response.code}: $err")
                 }
 
-                val reader = BufferedReader(InputStreamReader(response.body!!.byteStream()))
+                val reader = BufferedReader(InputStreamReader(response.body.byteStream()))
                 var line: String?
                 while (reader.readLine().also { line = it } != null) {
                     val trimmed = line!!.trim()
@@ -483,7 +483,7 @@ class GeminiApiClient(private val context: Context) {
             .build()
 
         client.newCall(req).execute().use { resp ->
-            val body = resp.body?.string().orEmpty()
+            val body = resp.body.string()
             if (!resp.isSuccessful) {
                 throw IllegalStateException("Image generation failed (${resp.code}): $body")
             }
@@ -590,7 +590,7 @@ class GeminiApiClient(private val context: Context) {
             .build()
 
         var current = client.newCall(createReq).execute().use { resp ->
-            val body = resp.body?.string().orEmpty()
+            val body = resp.body.string()
             if (!resp.isSuccessful) {
                 throw IllegalStateException("Interaction failed (${resp.code}): $body")
             }
@@ -612,7 +612,7 @@ class GeminiApiClient(private val context: Context) {
                 .get()
                 .build()
             current = client.newCall(pollReq).execute().use { resp ->
-                val body = resp.body?.string().orEmpty()
+                val body = resp.body.string()
                 if (!resp.isSuccessful) {
                     throw IllegalStateException("Polling interaction failed (${resp.code}): $body")
                 }
@@ -702,7 +702,7 @@ class GeminiApiClient(private val context: Context) {
         val out = File(context.cacheDir, "gen_${System.currentTimeMillis()}.$ext")
         client.newCall(req).execute().use { resp ->
             if (!resp.isSuccessful) throw IllegalStateException("Media download failed (${resp.code})")
-            out.writeBytes(resp.body!!.bytes())
+            out.writeBytes(resp.body.bytes())
         }
         return out
     }
